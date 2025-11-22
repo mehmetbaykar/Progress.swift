@@ -37,11 +37,14 @@ class ProgressBarTestPrinter: ProgressBarPrinter {
   }
 }
 
-@Suite("ProgressTests")
+@Suite("ProgressTests", .serialized)
 struct ProgressTests {
 
   @Test("testProgressDefaultConfiguration")
   func testProgressDefaultConfiguration() throws {
+    // Save the current default configuration
+    let savedConfig = ProgressBar.defaultConfiguration
+
     ProgressBar.defaultConfiguration = [
       ProgressIndex(), ProgressBarLine(), ProgressTimeEstimates(),
     ]
@@ -55,14 +58,23 @@ struct ProgressTests {
         == "0 of 2 [                              ] ETA: 00:00:00 (at 0.00) it/s)")
     bar.next()
     #expect(testPrinter.lastValue.hasPrefix("1 of 2 [---------------               ] ETA: "))
+
+    // Restore the original configuration
+    ProgressBar.defaultConfiguration = savedConfig
   }
 
   @Test("testProgressDefaultConfigurationUpdate")
   func testProgressDefaultConfigurationUpdate() {
+    // Save the current default configuration
+    let savedConfig = ProgressBar.defaultConfiguration
+
     ProgressBar.defaultConfiguration = [ProgressPercent()]
 
     let bar = ProgressBar(count: 2)
     #expect(bar.value == "0%")
+
+    // Restore the original configuration
+    ProgressBar.defaultConfiguration = savedConfig
   }
 
   @Test("testProgressConfiguration")
@@ -80,10 +92,21 @@ struct ProgressTests {
 
   @Test("testProgressBarCountZero")
   func testProgressBarCountZero() {
+    // Save the current default configuration
+    let savedConfig = ProgressBar.defaultConfiguration
+
+    // Ensure we're using the expected default configuration
+    ProgressBar.defaultConfiguration = [
+      ProgressIndex(), ProgressBarLine(), ProgressTimeEstimates(),
+    ]
+
     let bar = ProgressBar(count: 0)
 
     #expect(
       bar.value == "0 of 0 [------------------------------] ETA: 00:00:00 (at 0.00) it/s)")
+
+    // Restore the original configuration
+    ProgressBar.defaultConfiguration = savedConfig
   }
 
   @Test("testProgressBarOutOfBounds")
