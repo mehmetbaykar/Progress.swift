@@ -26,115 +26,110 @@
 //  SOFTWARE.
 //
 
-
 public protocol ProgressElementType {
-    func value(_ progressBar: ProgressBar) -> String
+  func value(_ progressBar: ProgressBar) -> String
 }
-
 
 /// the progress bar element e.g. "[----------------------        ]"
 public struct ProgressBarLine: ProgressElementType {
-    let barLength: Int
-    
-    public init(barLength: Int = 30) {
-        self.barLength = barLength
-    }
-    
-    public func value(_ progressBar: ProgressBar) -> String {
-        var completedBarElements = 0
-        if progressBar.count == 0 {
-            completedBarElements = barLength
-        } else {
-            completedBarElements = Int(Double(barLength) * (Double(progressBar.index) / Double(progressBar.count)))
-        }
-        
-        var barArray = [String](repeating: "-", count: completedBarElements)
-        barArray += [String](repeating: " ", count: barLength - completedBarElements)
-        return "[" + barArray.joined(separator: "") + "]"
-    }
-}
+  let barLength: Int
 
+  public init(barLength: Int = 30) {
+    self.barLength = barLength
+  }
+
+  public func value(_ progressBar: ProgressBar) -> String {
+    var completedBarElements = 0
+    if progressBar.count == 0 {
+      completedBarElements = barLength
+    } else {
+      completedBarElements = Int(
+        Double(barLength) * (Double(progressBar.index) / Double(progressBar.count)))
+    }
+
+    var barArray = [String](repeating: "-", count: completedBarElements)
+    barArray += [String](repeating: " ", count: barLength - completedBarElements)
+    return "[" + barArray.joined(separator: "") + "]"
+  }
+}
 
 /// the index element e.g. "2 of 3"
 public struct ProgressIndex: ProgressElementType {
-    public init() {}
-    
-    public func value(_ progressBar: ProgressBar) -> String {
-        return "\(progressBar.index) of \(progressBar.count)"
-    }
-}
+  public init() {}
 
+  public func value(_ progressBar: ProgressBar) -> String {
+    return "\(progressBar.index) of \(progressBar.count)"
+  }
+}
 
 /// the percentage element e.g. "90.0%"
 public struct ProgressPercent: ProgressElementType {
-    let decimalPlaces: Int
-    
-    public init(decimalPlaces: Int = 0) {
-        self.decimalPlaces = decimalPlaces
-    }
-    
-    public func value(_ progressBar: ProgressBar) -> String {
-        var percentDone = 100.0
-        if progressBar.count > 0 {
-            percentDone = Double(progressBar.index) / Double(progressBar.count) * 100
-        }
-        return "\(percentDone.format(decimalPlaces))%"
-    }
-}
+  let decimalPlaces: Int
 
+  public init(decimalPlaces: Int = 0) {
+    self.decimalPlaces = decimalPlaces
+  }
+
+  public func value(_ progressBar: ProgressBar) -> String {
+    var percentDone = 100.0
+    if progressBar.count > 0 {
+      percentDone = Double(progressBar.index) / Double(progressBar.count) * 100
+    }
+    return "\(percentDone.format(decimalPlaces))%"
+  }
+}
 
 /// the time estimates e.g. "ETA: 00:00:02 (at 1.00 it/s)"
 public struct ProgressTimeEstimates: ProgressElementType {
-    public init() {}
-    
-    public func value(_ progressBar: ProgressBar) -> String {
-        let totalTime = getTimeOfDay() - progressBar.startTime
-        
-        var itemsPerSecond = 0.0
-        var estimatedTimeRemaining = 0.0
-        if progressBar.index > 0 {
-            itemsPerSecond = Double(progressBar.index) / totalTime
-            estimatedTimeRemaining = Double(progressBar.count - progressBar.index) / itemsPerSecond
-        }
-        
-        let estimatedTimeRemainingString = formatDuration(estimatedTimeRemaining)
-        
-        return "ETA: \(estimatedTimeRemainingString) (at \(itemsPerSecond.format(2))) it/s)"
-    }
-    
-    fileprivate func formatDuration(_ duration: Double) -> String {
-        let duration = Int(duration)
-        let seconds = Double(duration % 60)
-        let minutes = Double((duration / 60) % 60)
-        let hours = Double(duration / 3600)
-        return "\(hours.format(0, minimumIntegerPartLength: 2)):\(minutes.format(0, minimumIntegerPartLength: 2)):\(seconds.format(0, minimumIntegerPartLength: 2))"
-    }
-}
+  public init() {}
 
+  public func value(_ progressBar: ProgressBar) -> String {
+    let totalTime = getTimeOfDay() - progressBar.startTime
+
+    var itemsPerSecond = 0.0
+    var estimatedTimeRemaining = 0.0
+    if progressBar.index > 0 {
+      itemsPerSecond = Double(progressBar.index) / totalTime
+      estimatedTimeRemaining = Double(progressBar.count - progressBar.index) / itemsPerSecond
+    }
+
+    let estimatedTimeRemainingString = formatDuration(estimatedTimeRemaining)
+
+    return "ETA: \(estimatedTimeRemainingString) (at \(itemsPerSecond.format(2))) it/s)"
+  }
+
+  fileprivate func formatDuration(_ duration: Double) -> String {
+    let duration = Int(duration)
+    let seconds = Double(duration % 60)
+    let minutes = Double((duration / 60) % 60)
+    let hours = Double(duration / 3600)
+    return
+      "\(hours.format(0, minimumIntegerPartLength: 2)):\(minutes.format(0, minimumIntegerPartLength: 2)):\(seconds.format(0, minimumIntegerPartLength: 2))"
+  }
+}
 
 /// an arbitrary string that can be added to the progress bar.
 public struct ProgressString: ProgressElementType {
-    let string: String
-    
-    public init(string: String) {
-        self.string = string
-    }
-    
-    public func value(_: ProgressBar) -> String {
-        return string
-    }
+  let string: String
+
+  public init(string: String) {
+    self.string = string
+  }
+
+  public func value(_: ProgressBar) -> String {
+    return string
+  }
 }
 
-
 public struct ProgressStringWithUpdate: ProgressElementType {
-    let update: () -> String
+  let update: () -> String
 
-    public init(update: @escaping () -> String) {
-        self.update = update
-    }
-    
-    public func value(_ progressBar: ProgressBar) -> String {
-        return update()
-    }
-    
+  public init(update: @escaping () -> String) {
+    self.update = update
+  }
+
+  public func value(_ progressBar: ProgressBar) -> String {
+    return update()
+  }
+
 }

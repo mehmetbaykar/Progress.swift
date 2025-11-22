@@ -29,156 +29,159 @@
 import Foundation
 
 public protocol ProgressBarPrinter {
-    mutating func display(_ progressBar: ProgressBar)
+  mutating func display(_ progressBar: ProgressBar)
 }
 
 struct ProgressBarTerminalPrinter: ProgressBarPrinter {
-    var lastPrintedTime = 0.0
+  var lastPrintedTime = 0.0
 
-    init() {
-        // the cursor is moved up before printing the progress bar.
-        // have to move the cursor down one line initially.
-        print("")
-    }
+  init() {
+    // the cursor is moved up before printing the progress bar.
+    // have to move the cursor down one line initially.
+    print("")
+  }
 
-    mutating func display(_ progressBar: ProgressBar) {
-        let currentTime = getTimeOfDay()
-        if currentTime - lastPrintedTime > 0.1 || progressBar.index == progressBar.count {
-            print("\u{1B}[1A\u{1B}[K\(progressBar.value)")
-            lastPrintedTime = currentTime
-        }
+  mutating func display(_ progressBar: ProgressBar) {
+    let currentTime = getTimeOfDay()
+    if currentTime - lastPrintedTime > 0.1 || progressBar.index == progressBar.count {
+      print("\u{1B}[1A\u{1B}[K\(progressBar.value)")
+      lastPrintedTime = currentTime
     }
+  }
 }
 
 // MARK: - ProgressBar
 
 public struct ProgressBar {
-    private(set) public var index = 0
-    public let startTime = getTimeOfDay()
+  private(set) public var index = 0
+  public let startTime = getTimeOfDay()
 
-    public let count: Int
-    let configuration: [ProgressElementType]?
+  public let count: Int
+  let configuration: [ProgressElementType]?
 
-    nonisolated(unsafe) public static var defaultConfiguration: [ProgressElementType] = [
-        ProgressIndex(), ProgressBarLine(), ProgressTimeEstimates(),
-    ]
+  nonisolated(unsafe) public static var defaultConfiguration: [ProgressElementType] = [
+    ProgressIndex(), ProgressBarLine(), ProgressTimeEstimates(),
+  ]
 
-    var printer: ProgressBarPrinter
+  var printer: ProgressBarPrinter
 
-    public var value: String {
-        let configuration = self.configuration ?? ProgressBar.defaultConfiguration
-        let values = configuration.map { $0.value(self) }
-        return values.joined(separator: " ")
-    }
+  public var value: String {
+    let configuration = self.configuration ?? ProgressBar.defaultConfiguration
+    let values = configuration.map { $0.value(self) }
+    return values.joined(separator: " ")
+  }
 
-    public init(
-        count: Int, configuration: [ProgressElementType]? = nil, printer: ProgressBarPrinter? = nil
-    ) {
-        self.count = count
-        self.configuration = configuration
-        self.printer = printer ?? ProgressBarTerminalPrinter()
-    }
+  public init(
+    count: Int, configuration: [ProgressElementType]? = nil, printer: ProgressBarPrinter? = nil
+  ) {
+    self.count = count
+    self.configuration = configuration
+    self.printer = printer ?? ProgressBarTerminalPrinter()
+  }
 
-    public mutating func next() {
-        guard index <= count else { return }
-        let anotherSelf = self
-        printer.display(anotherSelf)
-        index += 1
-    }
+  public mutating func next() {
+    guard index <= count else { return }
+    let anotherSelf = self
+    printer.display(anotherSelf)
+    index += 1
+  }
 
-    public mutating func setValue(_ index: Int) {
-        guard index <= count && index >= 0 else { return }
-        self.index = index
-        let anotherSelf = self
-        printer.display(anotherSelf)
-    }
+  public mutating func setValue(_ index: Int) {
+    guard index <= count && index >= 0 else { return }
+    self.index = index
+    let anotherSelf = self
+    printer.display(anotherSelf)
+  }
 
 }
 
 // MARK: - GeneratorType
 
 public struct ProgressGenerator<G: IteratorProtocol>: IteratorProtocol {
-    var source: G
-    var progressBar: ProgressBar
+  var source: G
+  var progressBar: ProgressBar
 
-    init(
-        source: G, count: Int, configuration: [ProgressElementType]? = nil,
-        printer: ProgressBarPrinter? = nil
-    ) {
-        self.source = source
-        self.progressBar = ProgressBar(count: count, configuration: configuration, printer: printer)
-    }
+  init(
+    source: G, count: Int, configuration: [ProgressElementType]? = nil,
+    printer: ProgressBarPrinter? = nil
+  ) {
+    self.source = source
+    self.progressBar = ProgressBar(count: count, configuration: configuration, printer: printer)
+  }
 
-    public mutating func next() -> G.Element? {
-        progressBar.next()
-        return source.next()
-    }
+  public mutating func next() -> G.Element? {
+    progressBar.next()
+    return source.next()
+  }
 }
 
 // MARK: - SequenceType
 
 public struct Progress<G: Sequence>: Sequence {
-    let generator: G
-    let configuration: [ProgressElementType]?
-    let printer: ProgressBarPrinter?
+  let generator: G
+  let configuration: [ProgressElementType]?
+  let printer: ProgressBarPrinter?
 
-    public init(
-        _ generator: G, configuration: [ProgressElementType]? = nil,
-        printer: ProgressBarPrinter? = nil
-    ) {
-        self.generator = generator
-        self.configuration = configuration
-        self.printer = printer
-    }
+  public init(
+    _ generator: G, configuration: [ProgressElementType]? = nil,
+    printer: ProgressBarPrinter? = nil
+  ) {
+    self.generator = generator
+    self.configuration = configuration
+    self.printer = printer
+  }
 
-    public func makeIterator() -> ProgressGenerator<G.Iterator> {
-        let count = generator.underestimatedCount
-        return ProgressGenerator(
-            source: generator.makeIterator(), count: count, configuration: configuration,
-            printer: printer)
-    }
+  public func makeIterator() -> ProgressGenerator<G.Iterator> {
+    let count = generator.underestimatedCount
+    return ProgressGenerator(
+      source: generator.makeIterator(), count: count, configuration: configuration,
+      printer: printer)
+  }
 }
 
 public struct ProgressGroupPrinter: ProgressBarPrinter {
-    var lastPrintedTime = 0.0
-    let num: Int
-    init(num: Int) {
-        self.num = num
-        print("")
-    }
+  var lastPrintedTime = 0.0
+  let num: Int
+  init(num: Int) {
+    self.num = num
+    print("")
+  }
 
-    public mutating func display(_ progressBar: ProgressBar) {
-        let currentTime = getTimeOfDay()
-        if currentTime - lastPrintedTime > 0.1 || progressBar.index == progressBar.count {
-            print(
-                "\u{1B}[\(num)A\u{1B}[K" + (progressBar.value)
-                    + String(repeating: "\n", count: num - 1))
-            lastPrintedTime = currentTime
-        }
+  public mutating func display(_ progressBar: ProgressBar) {
+    let currentTime = getTimeOfDay()
+    if currentTime - lastPrintedTime > 0.1 || progressBar.index == progressBar.count {
+      print(
+        "\u{1B}[\(num)A\u{1B}[K" + (progressBar.value)
+          + String(repeating: "\n", count: num - 1))
+      lastPrintedTime = currentTime
     }
+  }
 }
 
 public struct ProgressGroup<G: Sequence> {
-    var progresses: [Progress<G>]
+  var progresses: [Progress<G>]
 
-    public init(sequences: [G], configuration: [ProgressElementType] = []) {
-        self.progresses = []
-        var configIfEmpty = configuration
-        if configIfEmpty.isEmpty {
-            configIfEmpty = ProgressBar.defaultConfiguration
-        }
-        
-        for i in 0..<sequences.count {
-            var tempConfig = [ProgressElementType]()
-            for config in configIfEmpty {
-                tempConfig.append(config)
-            }
-            tempConfig.append(ProgressString(string: "Index \(i)"))
-            self.progresses.append(Progress(sequences[i], configuration: tempConfig, printer: ProgressGroupPrinter(num: sequences.count - (i) )))
-        }
+  public init(sequences: [G], configuration: [ProgressElementType] = []) {
+    self.progresses = []
+    var configIfEmpty = configuration
+    if configIfEmpty.isEmpty {
+      configIfEmpty = ProgressBar.defaultConfiguration
     }
 
-    public func getProgress(index: Int) -> Progress<G> {
-        return progresses[index]
+    for i in 0..<sequences.count {
+      var tempConfig = [ProgressElementType]()
+      for config in configIfEmpty {
+        tempConfig.append(config)
+      }
+      tempConfig.append(ProgressString(string: "Index \(i)"))
+      self.progresses.append(
+        Progress(
+          sequences[i], configuration: tempConfig,
+          printer: ProgressGroupPrinter(num: sequences.count - (i))))
     }
+  }
+
+  public func getProgress(index: Int) -> Progress<G> {
+    return progresses[index]
+  }
 }
