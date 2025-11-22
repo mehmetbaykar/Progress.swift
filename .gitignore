@@ -6,6 +6,8 @@
 build/
 /.build
 DerivedData
+.swiftpm
+.DS_Store
 
 ## Various settings
 *.pbxuser
