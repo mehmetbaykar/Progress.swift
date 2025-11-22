@@ -6,7 +6,7 @@
 build/
 /.build
 DerivedData
-.swiftpm
+/.swiftpm
 .DS_Store
 
 ## Various settings

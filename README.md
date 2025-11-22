@@ -1,11 +1,8 @@
 # Progress.swift :hourglass:
 [![Build Status](https://travis-ci.org/jkandzi/Progress.swift.svg?branch=master)](https://travis-ci.org/jkandzi/Progress.swift)
 [![codecov.io](https://codecov.io/github/jkandzi/Progress.swift/coverage.svg?branch=master)](https://codecov.io/github/jkandzi/Progress.swift?branch=master)
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![SPM ready](https://img.shields.io/badge/SPM-ready-orange.svg)](https://www.swift.org)
-[![Version](https://img.shields.io/cocoapods/v/Progress.swift.svg?style=flat)](http://cocoapods.org/pods/Progress.swift)
 [![License](https://img.shields.io/cocoapods/l/Progress.swift.svg?style=flat)](http://cocoapods.org/pods/Progress.swift)
-[![Platform](https://img.shields.io/cocoapods/p/Progress.swift.svg?style=flat)](http://cocoapods.org/pods/Progress.swift)
 
 ![demo gif](https://github.com/jkandzi/Progress.swift/blob/master/demo.gif)
 
@@ -82,25 +79,6 @@ $ Percent done: 80%
 
 ## Installation
 
-### Cocoapods
-
-Progress.swift is available through [CocoaPods](http://cocoapods.org). To install
-it, simply add the following line to your Podfile:
-
-```ruby
-pod "Progress.swift"
-```
-
-### Carthage
-
-To integrate Progress.swift into your Xcode project using Carthage, specify it in your Cartfile:
-
-```
-github "jkandzi/Progress.swift"
-```
-
-Run `carthage update` to build the framework and drag the built `Progress.framework` into your Xcode project.
-
 ### Swift Package Manager
 
 To install with the Swift Package Manager, add the following in your `Package.swift`:
@@ -115,10 +93,6 @@ let package = Package(
     ]
 )
 ```
-
-### Manual
-
-You can also copy the `Progress.swift` file into your Xcode project.
 
 ## Contribution
 
