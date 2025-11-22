@@ -48,19 +48,7 @@ for i in 0...3 {
 
 You can configure the progress bar by combining single building blocks of type `ProgressElementType`.
 
-Either by setting a default configuration:
-
-```swift
-ProgressBar.defaultConfiguration = [ProgressString(string: "Percent done:"), ProgressPercent()]
-```
-
-which creates the following result:
-
-```
-$ Percent done: 80%
-```
-
-or by providing a specific configuration in the Process initializer:
+Provide a specific configuration in the initializer:
 
 ```swift
 Progress(0...10, configuration: [ProgressPercent(), ProgressBarLine(barLength: 60)])
@@ -70,6 +58,18 @@ resulting in something like this:
 
 ```
 $ 100% [------------------------------------------------------------]
+```
+
+Or for a ProgressBar:
+
+```swift
+var bar = ProgressBar(count: 4, configuration: [ProgressString(string: "Percent done:"), ProgressPercent()])
+```
+
+which creates:
+
+```
+$ Percent done: 80%
 ```
 
 **Available `ProgressElementType` elements:**
